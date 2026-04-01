@@ -28,42 +28,44 @@ register_uninstall_hook( __FILE__, 'wp_reverse_title_uninstall' );
 // Title reversal (front-end filters - intentionally outside is_admin())
 // ---------------------------------------------------------------------------
 
-add_filter( 'document_title_parts', 'wp_reverse_title_parts' );
+add_filter( 'document_title_separator', 'wp_reverse_title_separator' );
+add_filter( 'document_title_parts',     'wp_reverse_title_parts' );
 
 /**
- * Reverses the document title parts (e.g. "Post Title – Site Name" becomes
- * "Site Name – Post Title") on singular posts and pages, excluding the front
- * page and any post that has the per-post opt-out checked.
+ * Returns whether title reversal should apply on the current request.
+ * Cached in a static variable since both document_title_separator and
+ * document_title_parts need this result within the same page load.
  *
- * The condition is passed through the 'wp_reverse_title_enabled' filter,
- * allowing other plugins or themes to override the logic without modifying
- * this file.
- *
- * The separator is injected here rather than via document_title_separator so
- * it only applies when a reversal is actually happening, leaving all other
- * title contexts (archives, 404s, search results) untouched.
- *
- * array_reverse() is called with preserve_keys = true intentionally -
- * WordPress assembles the <title> from array values in order, so key
- * preservation is correct here.
- *
- * @param array $title Associative array of title parts from WordPress.
- * @return array Modified (or unchanged) title parts array.
+ * @return bool
  */
-function wp_reverse_title_parts( $title ) {
-    $singular  = is_singular();
-    $opted_out = $singular && (bool) get_post_meta( get_the_ID(), WP_REVERSE_TITLE_OPT_OUT_KEY, true );
+function wp_reverse_title_should_reverse() {
+    static $result = null;
 
-    $should_reverse = apply_filters(
-        'wp_reverse_title_enabled',
-        $singular && ! is_front_page() && ! $opted_out
-    );
+    if ( null === $result ) {
+        $singular = is_singular();
+        $opted_out = $singular && (bool) get_post_meta( get_the_ID(), WP_REVERSE_TITLE_OPT_OUT_KEY, true );
 
-    if ( ! $should_reverse ) {
-        return $title;
+        $result = (bool) apply_filters(
+            'wp_reverse_title_enabled',
+            $singular && ! is_front_page() && ! $opted_out
+        );
     }
 
-    $title = array_reverse( $title, true ); // true = preserve keys
+    return $result;
+}
+
+/**
+ * Replaces the default title separator when a reversal is active on the
+ * current request. Registered before document_title_parts because WordPress
+ * calls document_title_separator first inside wp_get_document_title().
+ *
+ * @param string $sep The current separator.
+ * @return string The custom separator, or the original if none is set or no reversal is happening.
+ */
+function wp_reverse_title_separator( $sep ) {
+    if ( ! wp_reverse_title_should_reverse() ) {
+        return $sep;
+    }
 
     $custom_sep = trim( get_option( 'wp_reverse_title_separator', '' ) );
 
@@ -74,13 +76,35 @@ function wp_reverse_title_parts( $title ) {
      */
     $custom_sep = apply_filters( 'wp_reverse_title_separator', $custom_sep );
 
-    if ( '' !== $custom_sep ) {
-        add_filter( 'document_title_separator', function() use ( $custom_sep ) {
-            return $custom_sep;
-        }, 99 );
+    return ( '' !== $custom_sep ) ? $custom_sep : $sep;
+}
+
+/**
+ * Reverses the document title parts (e.g. "Post Title – Site Name" becomes
+ * "Site Name – Post Title") on singular posts and pages, excluding the front
+ * page and any post that has the per-post opt-out checked.
+ *
+ * The condition is passed through the 'wp_reverse_title_enabled' filter,
+ * allowing other plugins or themes to override the logic without modifying
+ * this file.
+ *
+ * The separator is handled in wp_reverse_title_separator() above, which runs
+ * first because WordPress calls document_title_separator before
+ * document_title_parts inside wp_get_document_title().
+ *
+ * array_reverse() is called with preserve_keys = true intentionally -
+ * WordPress assembles the <title> from array values in order, so key
+ * preservation is correct here.
+ *
+ * @param array $title Associative array of title parts from WordPress.
+ * @return array Modified (or unchanged) title parts array.
+ */
+function wp_reverse_title_parts( $title ) {
+    if ( ! wp_reverse_title_should_reverse() ) {
+        return $title;
     }
 
-    return $title;
+    return array_reverse( $title, true ); // true = preserve keys
 }
 
 // ---------------------------------------------------------------------------
