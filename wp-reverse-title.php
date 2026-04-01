@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Reverse Title
- * Description: Reverses the document title on singular posts, pages, and custom post types.
- * Version: 1.0
+ * Description: Reverses the page title and site name on posts, pages, and custom post types and introduces a user-configurable custom separator.
+ * Version: 1.0.2
  * Author: Christefano Reyes
  * Plugin URI: https://github.com/christefano/wp-reverse-title/
  * Author URI: https://github.com/christefano/
