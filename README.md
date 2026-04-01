@@ -10,7 +10,7 @@ Well, Reverse Title does offer a little bit more. You can also:
 - Enable or disable title reversal on a per-post basis
 - Add a custom tagline, slogan, or even a Unicode character between your site name and page title
 
-If like me you like your bookmarks and tabs sorted by [site name] and having a custom separator between, this plugin is for you. Using Reverse Title has no negative impact on SEO. If your site has an up to date sitemap.xml file, search engines will simply pick up your site’s new titles in a couple days. (An important exception is emojis. Unicode characters are fine, but *don’t use emojis in your `<title>` tags*.)
+If like me you like having your bookmarks and tabs sorted by [site name] and being able to use a custom separator, this plugin is for you. Using Reverse Title has no negative impact on SEO. If your site has an up to date sitemap.xml file, search engines will simply pick up your site’s new titles in a couple days. (An important exception is emojis. Unicode characters are fine, but **don’t use emojis in your `<title>` tags**.)
 
 Reverse Title was developed for the [McMinnville Chess Club](https://macchess.org) website. If you find this plugin useful, consider [making a donation](https://macchess.org/donate) to the McMinnville Chess Club!
 
@@ -89,7 +89,7 @@ The separator is applied via a late-priority `document_title_separator` filter t
 
 **The custom separator appears garbled.**
 
-Check that your database is UTF-8 encoded. WordPress uses UTF-8 by default, but older WordPress sites may still be using latin1. RSS readers, text-based browsers, and older systems and their system fonts may also not support your favorite Unicode characters, but that’s not a problem with WordPress. Still, choose wisely (𐃯), and *don’t put emojis in your `<title>` tags*. It will technically work, but [a 2022 case study](https://www.searchpilot.com/resources/case-studies/seo-testing-lessons-emoji-title-tags) showed a measurable drop in traffic on sites using emojis in their titles.
+Check that your database is UTF-8 encoded. WordPress uses UTF-8 by default, but older WordPress sites may still be using latin1. RSS readers, text-based browsers, and older systems and their system fonts may also not support your favorite Unicode characters, but that’s not a problem with WordPress. Still, choose wisely, and **don’t put emojis in your `<title>` tags**. It will technically work, but [a 2022 case study](https://www.searchpilot.com/resources/case-studies/seo-testing-lessons-emoji-title-tags) showed a measurable drop in traffic on sites using emojis in their titles.
 
 
 ## Data
