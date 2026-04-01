@@ -10,7 +10,7 @@ Well, Reverse Title does offer a little bit more. You can also:
 - Enable or disable title reversal on a per-post basis
 - Add a custom tagline, slogan, or even a Unicode character between your site name and page title
 
-If like me you like your bookmarks and tabs sorted by [site name] and having a custom separator between, this plugin is for you. Using Reverse Title has no negative impact on SEO. If your site has an up to date sitemap.xml file, search engines will simply pick up your site’s new titles in a couple days. (An important exception is emojis. Unicode characters are fine, but *don’t use emojis in your `<title>` tags*.)
+If like me you like having your bookmarks and tabs sorted by [site name] and being able to use a custom separator, this plugin is for you. Using Reverse Title has no negative impact on SEO. If your site has an up to date sitemap.xml file, search engines will simply pick up your site's new titles in a couple days. (An important exception is emojis. Unicode characters are fine, but **don't use emojis in your `<title>` tags**. Sites using emojis in their titles may experience [a measurable drop in traffic](https://www.searchpilot.com/resources/case-studies/seo-testing-lessons-emoji-title-tags).)
 
 Reverse Title was developed for the [McMinnville Chess Club](https://macchess.org) website. If you find this plugin useful, consider [making a donation](https://macchess.org/donate) to the McMinnville Chess Club!
 
@@ -23,11 +23,11 @@ Applies to posts, pages, and any registered custom post type. The front page is 
 
 **Custom separator**
 
-By default Reverse Title uses whatever separator WordPress is configured to use (usually –). A custom separator can be set under Settings -> Reverse Title, for example `·`, `|`, or even `♝`. Leave the field blank to fall back to the WordPress default.
+By default Reverse Title uses whatever separator WordPress is configured to use (usually `–`). A custom separator can be set under Settings -> Reverse Title, for example `·`, `|`, or even `♝`. Leave the field blank to fall back to the WordPress default. The custom separator also applies to the front page title when the site has a tagline set under Settings -> General.
 
 **Per-post opt-out**
 
-Individual posts and pages can be excluded from title reversal. A Reverse Title meta box appears in the sidebar of the post and page editors with a single checkbox: *Don't reverse page title and site name for this post*. The meta box appears on all public post types, including custom post types. The checkbox state is stored as post meta and deleted (not set to 0) when unchecked, keeping the database clean.
+Individual posts and pages can be excluded from title reversal. A Reverse Title meta box appears in the sidebar of the post and page editors with a single checkbox: *Don't reverse page title and site name for this post*. The meta box appears on all public post types, including custom post types. The checkbox state is stored as post meta and deleted (not set to 0) when unchecked, which keeps unnecessary post data out of the database.
 
 **Developer filters**
 
@@ -63,7 +63,7 @@ All options are under Settings -> Reverse Title.
 
 **Custom separator**
 
-Replaces the default WordPress title separator in reversed titles. Accepts any length of text - use this to add a custom tagline or slogan between your site name and page title. Leave blank to use the WordPress default. A live preview updates as you type, and a Reset link clears the field back to blank in one click.
+Replaces the default WordPress title separator in reversed titles. Accepts any length of text - use this to add a custom tagline, slogan, or even a Unicode character between your site name and page title. Leave blank to use the WordPress default. A live preview updates as you type, and a Reset link clears the field back to blank in one click.
 
 **Per-post opt-out**
 
@@ -74,7 +74,7 @@ When enabled, a Reverse Title meta box appears in the editor sidebar on all publ
 
 * The custom separator applies globally to all titles, not per post type or per post.
 * Titles for archives, 404s, and search results are unaffected.
-* While Unicode separators are supported by all modern browsers and common characters like `·` or `|` are safe , some screen readers may announce characters by name. For example, instead of “pi” the 𝜋 symbol may be announced as “MATHEMATICAL BOLD ITALIC SMALL PI” instead.
+* While Unicode separators are supported by all modern browsers and common characters like `·` or `|` are safe, some screen readers may announce characters by name. For example, instead of "pi" the 𝜋 symbol may be announced as "MATHEMATICAL BOLD ITALIC SMALL PI" instead.
 
 
 ## Troubleshooting
@@ -89,7 +89,7 @@ The separator is applied via `document_title_separator`, which WordPress calls b
 
 **The custom separator appears garbled.**
 
-Check that your database is UTF-8 encoded. WordPress uses UTF-8 by default, but older WordPress sites may still be using latin1. RSS readers, text-based browsers, and older systems and their system fonts may also not support your favorite Unicode characters, but that’s not a problem with WordPress. Still, choose wisely (𐃯), and *don’t put emojis in your `<title>` tags*. It will technically work, but [a 2022 case study](https://www.searchpilot.com/resources/case-studies/seo-testing-lessons-emoji-title-tags) showed a measurable drop in traffic on sites using emojis in their titles.
+Check that your database is UTF-8 encoded. WordPress uses UTF-8 by default, but older WordPress sites may still be using latin1. RSS readers, text-based browsers, and older systems and their system fonts may also not support your favorite Unicode characters, but that's not a problem with WordPress. 
 
 
 ## Data

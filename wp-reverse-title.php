@@ -33,17 +33,26 @@ add_filter( 'document_title_parts',     'wp_reverse_title_parts' );
 
 /**
  * Returns whether title reversal should apply on the current request.
+ *
  * Cached in a static variable since both document_title_separator and
  * document_title_parts need this result within the same page load.
  *
+ * Accepts a $refresh parameter to bust the cache, which is needed in
+ * WP-CLI, PHPUnit, or any multi-request scenario sharing a PHP process.
+ *
+ * Uses get_queried_object_id() rather than get_the_ID() for the post meta
+ * lookup, since get_the_ID() relies on the global $post loop state which
+ * may not be set in all contexts (e.g. REST API title generation).
+ *
+ * @param bool $refresh Force recompute even if already cached.
  * @return bool
  */
-function wp_reverse_title_should_reverse() {
+function wp_reverse_title_should_reverse( $refresh = false ) {
     static $result = null;
 
-    if ( null === $result ) {
-        $singular = is_singular();
-        $opted_out = $singular && (bool) get_post_meta( get_the_ID(), WP_REVERSE_TITLE_OPT_OUT_KEY, true );
+    if ( $refresh || null === $result ) {
+        $singular  = is_singular();
+        $opted_out = $singular && (bool) get_post_meta( get_queried_object_id(), WP_REVERSE_TITLE_OPT_OUT_KEY, true );
 
         $result = (bool) apply_filters(
             'wp_reverse_title_enabled',
@@ -59,18 +68,33 @@ function wp_reverse_title_should_reverse() {
  * current request. Registered before document_title_parts because WordPress
  * calls document_title_separator first inside wp_get_document_title().
  *
+ * Also applies the custom separator on the front page when the site has a
+ * tagline set under Settings -> General, keeping the separator consistent
+ * across the whole site without affecting the title order on the front page.
+ *
+ * Note: sanitize_text_field() is used on save and will silently strip
+ * anything that looks like an HTML tag (e.g. "<3" becomes empty). This is
+ * intentional - the separator renders inside a <title> tag.
+ *
+ * Only called by WordPress via the document_title_separator filter, which
+ * runs inside wp_get_document_title() before document_title_parts.
+ *
  * @param string $sep The current separator.
  * @return string The custom separator, or the original if none is set or no reversal is happening.
  */
 function wp_reverse_title_separator( $sep ) {
-    if ( ! wp_reverse_title_should_reverse() ) {
+    $custom_sep = trim( get_option( 'wp_reverse_title_separator', '' ) );
+
+    $applies = wp_reverse_title_should_reverse() ||
+               ( '' !== $custom_sep && is_front_page() && '' !== trim( get_bloginfo( 'description' ) ) );
+
+    if ( ! $applies ) {
         return $sep;
     }
 
-    $custom_sep = trim( get_option( 'wp_reverse_title_separator', '' ) );
-
     /**
      * Filters the title separator used in reversed titles only.
+     * Also applies on the front page when the site has a tagline.
      *
      * @param string $custom_sep The separator from Settings, or empty string for WP default.
      */
@@ -81,8 +105,8 @@ function wp_reverse_title_separator( $sep ) {
 
 /**
  * Reverses the document title parts (e.g. "Post Title – Site Name" becomes
- * "Site Name – Post Title") on singular posts and pages, excluding the front
- * page and any post that has the per-post opt-out checked.
+ * "Site Name – Post Title") on any singular post, page, or custom post type,
+ * excluding the front page and any post with the per-post opt-out checked.
  *
  * The condition is passed through the 'wp_reverse_title_enabled' filter,
  * allowing other plugins or themes to override the logic without modifying
@@ -411,6 +435,8 @@ function wp_reverse_title_save_meta_box( $post_id ) {
 /**
  * Cleans up plugin data on uninstall.
  * Removes both plugin options and all per-post opt-out meta entries.
+ *
+ * @return void
  */
 function wp_reverse_title_uninstall() {
     delete_option( 'wp_reverse_title_separator' );
