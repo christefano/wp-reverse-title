@@ -1,6 +1,6 @@
 # Reverse Title
 
-Reverse Title is a lightweight WordPress plugin that swaps the order of the page title and site name in the browser `<title>` tag on posts, pages, custom post types, categories, tags, author pages, dates, search pages, and 404 pages. The default WordPress title format is `Page Title – Site Name`, and with Reverse Title it becomes `Site Name – Page Title`.
+Reverse Title is a lightweight WordPress plugin that swaps the order of the page title and site name in the browser `<title>` tag on posts, pages, and custom post types. The default WordPress title format is `Page Title – Site Name`, and with Reverse Title it becomes `Site Name – Page Title`. The front page title is unchanged.
 
 The most common alternative to Reverse Title is using a small custom filter in functions.php, and there are title reversal features found in plugins like Yoast SEO. Reverse Title is a bit different, though, because it tries to address just one problem, and that's it.
 
@@ -23,7 +23,11 @@ Applies to posts, pages, and any registered custom post type. The front page is 
 
 **Custom separator**
 
-By default Reverse Title uses whatever separator WordPress is configured to use (usually `–`). A custom separator can be set under Settings -> Reverse Title, for example `·`, `|`, or even `♝`. Leave the field blank to fall back to the WordPress default. The custom separator also applies to the front page title when the site has a tagline set under Settings -> General.
+By default Reverse Title uses whatever separator WordPress is configured to use (usually `–`). A custom separator can be set under Settings -> Reverse Title, for example `·`, `|`, or even `♝`. Leave the field blank to fall back to the WordPress default. The custom separator also applies to the front page title when the site has a tagline set under Settings -> General. If the separator contains an emoji, an inline warning appears explaining the SEO risk (see the note about emoji in the intro).
+
+**Archives and search**
+
+By default only singular posts, pages, and custom post types are reversed. An opt-in setting under Settings -> Reverse Title extends reversal to category, tag, author, date, search, and 404 titles as well. The front page is always excluded.
 
 **Per-post opt-out**
 
@@ -63,17 +67,21 @@ All options are under Settings -> Reverse Title.
 
 **Custom separator**
 
-Replaces the default WordPress title separator in reversed titles. Accepts any length of text - use this to add a custom tagline, slogan, or even a Unicode character between your site name and page title. Leave blank to use the WordPress default. A live preview updates as you type, and a Reset link clears the field back to blank in one click.
+Replaces the default WordPress title separator in reversed titles. Accepts any length of text - use this to add a custom tagline, slogan, or even a Unicode character between your site name and page title. Leave blank to use the WordPress default. A live preview updates as you type.
 
 **Per-post opt-out**
 
 When enabled, a Reverse Title meta box appears in the editor sidebar on all public post types, allowing individual posts to opt out of title reversal. Enabled by default. Disable this if you don't need per-post control and prefer a more minimal editor sidebar.
 
+**Archives and search**
+
+Off by default. When enabled, title reversal also applies to category, tag, author, date, search, and 404 pages, not just singular posts and pages. The front page is always excluded.
+
 
 ## Limitations
 
 * The custom separator applies globally to all titles, not per post type or per post.
-* Titles for archives, 404s, and search results are unaffected.
+* Titles for archives, 404s, and search results are unaffected unless the Archives and search setting is enabled.
 * While Unicode separators are supported by all modern browsers and common characters like `·` or `|` are safe, some screen readers may announce characters by name. For example, instead of "pi" the 𝜋 symbol may be announced as "MATHEMATICAL BOLD ITALIC SMALL PI" instead.
 
 
@@ -96,9 +104,10 @@ Check that your database is UTF-8 encoded. WordPress uses UTF-8 by default, but 
 
 * The custom separator is stored in `wp_options` under `wp_reverse_title_separator`.
 * The per-post opt-out setting is stored in `wp_options` under `wp_reverse_title_show_meta_box`.
+* The archives and search setting is stored in `wp_options` under `wp_reverse_title_reverse_archives`.
 * Per-post opt-outs are stored as post meta keyed `_wp_reverse_title_opt_out` on the post.
 
-Reverse Title tries to play nice, and uninstalling the plugin deletes both options and all per-post opt-out meta entries via `delete_post_meta_by_key()`.
+Reverse Title tries to play nice, and uninstalling the plugin deletes all three options and all per-post opt-out meta entries via `delete_post_meta_by_key()`.
 
 
 ## License

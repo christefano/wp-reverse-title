@@ -1,21 +1,15 @@
-# CHANGELOG
+# Changelog
+
+All notable changes to Reverse Title are documented here.
 
 ## 1.0.3
 
-- Added archives / search toggle. Opt-in reversal for category, tag, author, date, search, and 404 titles (off by default).
-- Added an "emoji guard" that shows a warning when the separator has an emoji in it.
-- Removed the Reset button.
-- Added CHANGELOG.
+### Added
+- Archives and search setting: opt-in to also reverse category, tag, author, date, search, and 404 titles. Off by default.
+- Emoji guard: an inline warning on the settings page when the custom separator contains an emoji, with a link to the SEO case study.
 
-# 1.0.2
+### Removed
+- Reset link on the custom separator field.
 
-- Fix separator on front page.
-- Audited for security and performance.
-
-# 1.0.1
-
-- Fix custom separator code.
-
-# 1.0
-
-- First public release.
+### Fixed
+- Version constant (`WP_REVERSE_TITLE_VERSION`) now matches the plugin header.

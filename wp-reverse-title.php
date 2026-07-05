@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Reverse Title
  * Description: Reverses the page title and site name on posts, pages, and custom post types and introduces a user-configurable custom separator.
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Christefano Reyes
  * Plugin URI: https://github.com/christefano/wp-reverse-title/
  * Author URI: https://github.com/christefano/
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-define( 'WP_REVERSE_TITLE_VERSION', '1.0' );
+define( 'WP_REVERSE_TITLE_VERSION', '1.0.3' );
 define( 'WP_REVERSE_TITLE_OPT_OUT_KEY', '_wp_reverse_title_opt_out' );
 define( 'WP_REVERSE_TITLE_BASENAME', plugin_basename( __FILE__ ) );
 
@@ -54,9 +54,15 @@ function wp_reverse_title_should_reverse( $refresh = false ) {
         $singular  = is_singular();
         $opted_out = $singular && (bool) get_post_meta( get_queried_object_id(), WP_REVERSE_TITLE_OPT_OUT_KEY, true );
 
+        // Archives, search, and 404 titles are only reversed when the site-wide
+        // setting is enabled. is_home() covers the blog posts index when a static
+        // front page is set; is_front_page() is always excluded below.
+        $reverse_archives = (bool) get_option( 'wp_reverse_title_reverse_archives', false );
+        $archive_context  = $reverse_archives && ( is_archive() || is_search() || is_404() || is_home() );
+
         $result = (bool) apply_filters(
             'wp_reverse_title_enabled',
-            $singular && ! is_front_page() && ! $opted_out
+            ! is_front_page() && ! $opted_out && ( $singular || $archive_context )
         );
     }
 
@@ -229,6 +235,17 @@ function wp_reverse_title_register_settings() {
         )
     );
 
+    register_setting(
+        'wp_reverse_title_settings',
+        'wp_reverse_title_reverse_archives',
+        array(
+            'type'              => 'boolean',
+            'sanitize_callback' => function( $value ) { return (bool) $value; },
+            'default'           => false,
+            'autoload'          => 'yes',
+        )
+    );
+
     add_settings_section(
         'wp_reverse_title_main',
         '',
@@ -251,10 +268,33 @@ function wp_reverse_title_register_settings() {
         'wp-reverse-title',
         'wp_reverse_title_main'
     );
+
+    add_settings_field(
+        'wp_reverse_title_reverse_archives',
+        __( 'Archives and search', 'wp-reverse-title' ),
+        'wp_reverse_title_render_archives_field',
+        'wp-reverse-title',
+        'wp_reverse_title_main'
+    );
 }
 
 /**
- * Renders the custom separator input field with a live preview and Reset link.
+ * Detects emoji (pictographic) characters in a string.
+ *
+ * Restricted to the high pictographic planes plus the emoji variation selector
+ * (U+FE0F) so that legitimate text-style symbols the plugin recommends - the
+ * chess bishop ♝, the middle dot ·, the pipe |, and the en dash – - are never
+ * flagged as emoji.
+ *
+ * @param string $str The string to test.
+ * @return bool True when the string contains at least one emoji character.
+ */
+function wp_reverse_title_has_emoji( $str ) {
+    return (bool) preg_match( '/[\x{1F000}-\x{1FAFF}\x{1F1E6}-\x{1F1FF}]|\x{FE0F}/u', $str );
+}
+
+/**
+ * Renders the custom separator input field with a live preview.
  */
 function wp_reverse_title_render_separator_field() {
     $value = get_option( 'wp_reverse_title_separator', '' );
@@ -266,9 +306,18 @@ function wp_reverse_title_render_separator_field() {
         value="<?php echo esc_attr( $value ); ?>"
         style="width: 300px;"
     />
-    <a href="#" id="wp_reverse_title_reset" style="margin-left: 8px; text-decoration: none; color: #a00;" aria-label="<?php esc_attr_e( 'Reset separator to default', 'wp-reverse-title' ); ?>">
-        <?php esc_html_e( 'Reset', 'wp-reverse-title' ); ?>
-    </a>
+    <?php if ( wp_reverse_title_has_emoji( $value ) ) : ?>
+    <p class="description" style="color: #a00;">
+        <strong><?php esc_html_e( 'Warning:', 'wp-reverse-title' ); ?></strong>
+        <?php
+        printf(
+            /* translators: %s: link to the SearchPilot emoji title-tag case study. */
+            esc_html__( 'This separator contains an emoji. Emoji in title tags can cause a measurable drop in search traffic - see this %s. Unicode symbols like · or ♝ are safe.', 'wp-reverse-title' ),
+            '<a href="' . esc_url( 'https://www.searchpilot.com/resources/case-studies/seo-testing-lessons-emoji-title-tags' ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'case study', 'wp-reverse-title' ) . '</a>'
+        );
+        ?>
+    </p>
+    <?php endif; ?>
     <p class="description">
         <?php esc_html_e( 'Replaces the default WordPress title separator (–) in reversed titles. Leave blank to use the WordPress default. Accepts any length of text - use this to add a custom tagline or slogan between your site name and page title.', 'wp-reverse-title' ); ?>
     </p>
@@ -280,7 +329,6 @@ function wp_reverse_title_render_separator_field() {
     ( function() {
         var input   = document.getElementById( 'wp_reverse_title_separator' );
         var preview = document.getElementById( 'wp_reverse_title_preview' );
-        var reset   = document.getElementById( 'wp_reverse_title_reset' );
         var site    = <?php echo wp_json_encode( get_bloginfo( 'name' ) ); ?>;
         var example = <?php echo wp_json_encode( __( 'About', 'wp-reverse-title' ) ); ?>;
 
@@ -292,13 +340,6 @@ function wp_reverse_title_render_separator_field() {
         }
 
         input.addEventListener( 'input', updatePreview );
-
-        reset.addEventListener( 'click', function( e ) {
-            e.preventDefault();
-            input.value = '';
-            updatePreview();
-            input.focus();
-        } );
 
         updatePreview();
     } )();
@@ -324,6 +365,28 @@ function wp_reverse_title_render_meta_box_field() {
     </label>
     <p class="description">
         <?php esc_html_e( 'When enabled, a Reverse Title meta box appears in the editor sidebar allowing individual posts to opt out of title reversal.', 'wp-reverse-title' ); ?>
+    </p>
+    <?php
+}
+
+/**
+ * Renders the archives/search reversal enable/disable checkbox field.
+ */
+function wp_reverse_title_render_archives_field() {
+    $enabled = (bool) get_option( 'wp_reverse_title_reverse_archives', false );
+    ?>
+    <label for="wp_reverse_title_reverse_archives">
+        <input
+            type="checkbox"
+            name="wp_reverse_title_reverse_archives"
+            id="wp_reverse_title_reverse_archives"
+            value="1"
+            <?php checked( $enabled ); ?>
+        />
+        <?php esc_html_e( 'Also reverse titles on archives, search results, and 404 pages', 'wp-reverse-title' ); ?>
+    </label>
+    <p class="description">
+        <?php esc_html_e( 'By default only singular posts, pages, and custom post types are reversed. Enable this to also reverse category, tag, author, date, search, and 404 titles. The front page is always excluded.', 'wp-reverse-title' ); ?>
     </p>
     <?php
 }
@@ -441,6 +504,7 @@ function wp_reverse_title_save_meta_box( $post_id ) {
 function wp_reverse_title_uninstall() {
     delete_option( 'wp_reverse_title_separator' );
     delete_option( 'wp_reverse_title_show_meta_box' );
+    delete_option( 'wp_reverse_title_reverse_archives' );
 
     delete_post_meta_by_key( WP_REVERSE_TITLE_OPT_OUT_KEY );
 }
