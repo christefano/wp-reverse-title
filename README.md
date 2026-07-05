@@ -80,7 +80,7 @@ Off by default. When enabled, title reversal also applies to category, tag, auth
 
 ## Limitations
 
-* The custom separator applies globally to all titles, not per post type or per post.
+* The custom separator setting applies globally by default. Use the `wp_reverse_title_separator` filter (above) to vary it per post type or per post.
 * Titles for archives, 404s, and search results are unaffected unless the Archives and search setting is enabled.
 * While Unicode separators are supported by all modern browsers and common characters like `·` or `|` are safe, some screen readers may announce characters by name. For example, instead of "pi" the 𝜋 symbol may be announced as "MATHEMATICAL BOLD ITALIC SMALL PI" instead.
 
@@ -103,7 +103,7 @@ Check that your database is UTF-8 encoded. WordPress uses UTF-8 by default, but 
 ## Data
 
 * The custom separator is stored in `wp_options` under `wp_reverse_title_separator`.
-* The per-post opt-out setting is stored in `wp_options` under `wp_reverse_title_show_meta_box`.
+* Whether the opt-out meta box is shown is stored in `wp_options` under `wp_reverse_title_show_meta_box`.
 * The archives and search setting is stored in `wp_options` under `wp_reverse_title_reverse_archives`.
 * Per-post opt-outs are stored as post meta keyed `_wp_reverse_title_opt_out` on the post.
 
