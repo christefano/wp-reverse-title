@@ -1,6 +1,6 @@
 # Reverse Title
 
-Reverse Title is a lightweight WordPress plugin that swaps the order of the page title and site name in the browser `<title>` tag on posts, pages, and custom post types. The default WordPress title format is `Page Title – Site Name`, and with Reverse Title it becomes `Site Name – Page Title`. The front page title is unchanged.
+Reverse Title is a lightweight WordPress plugin that swaps the order of the page title and site name in the browser `<title>` tag on posts, pages, custom post types, categories, tags, author pages, dates, search pages, and 404 pages. The default WordPress title format is `Page Title – Site Name`, and with Reverse Title it becomes `Site Name – Page Title`.
 
 The most common alternative to Reverse Title is using a small custom filter in functions.php, and there are title reversal features found in plugins like Yoast SEO. Reverse Title is a bit different, though, because it tries to address just one problem, and that's it.
 
